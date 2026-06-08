@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Chat Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0812;--bg2:#120d1c;--card:#1a1228;--card2:#201630;
+  --border:#2e1f45;--text:#fce7f3;--muted:#9d7bb5;
+  --rose:#f43f5e;--violet:#a855f7;--gold:#f59e0b;
+  --green:#10b981;--cyan:#22d3ee;--indigo:#6366f1;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,#1e0f2e,#120d1c);border-bottom:1px solid var(--border);
+  padding:1.25rem 2rem;display:flex;align-items:center;gap:1rem}
+.hdr-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--rose),var(--violet));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.hdr h1{font-size:1.35rem;font-weight:700;background:linear-gradient(135deg,#fce7f3,#c4b5fd);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hdr p{font-size:.8rem;color:var(--muted)}
+
+/* ── Layout ── */
+.wrap{max-width:1400px;margin:0 auto;padding:2rem}
+
+/* ── Upload ── */
+.upload-wrap{display:flex;flex-direction:column;align-items:center;padding:4rem 1rem}
+.drop-zone{border:2px dashed var(--border);border-radius:16px;padding:3rem 2rem;cursor:pointer;
+  transition:all .3s;background:var(--card);max-width:560px;width:100%;text-align:center}
+.drop-zone:hover,.drop-zone.over{border-color:var(--rose);background:var(--card2)}
+.drop-zone .icon{font-size:3rem;margin-bottom:1rem}
+.drop-zone h2{font-size:1.2rem;margin-bottom:.5rem}
+.drop-zone p{color:var(--muted);font-size:.85rem;margin-bottom:1.5rem;line-height:1.6}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;border-radius:8px;
+  font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;font-family:inherit}
+.btn-rose{background:linear-gradient(135deg,var(--rose),#be185d);color:#fff}
+.btn-rose:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(244,63,94,.4)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--card2);color:var(--text)}
+
+/* ── Section labels ── */
+.sec{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);margin:1.75rem 0 .75rem}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+.top-bar h2{font-size:.95rem;color:var(--muted)}
+
+/* ── Stats cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:1.1rem 1.25rem;display:flex;align-items:center;gap:.9rem}
+.si{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;flex-shrink:0}
+.si-r{background:rgba(244,63,94,.15)} .si-v{background:rgba(168,85,247,.15)}
+.si-g{background:rgba(16,185,129,.15)} .si-o{background:rgba(245,158,11,.15)}
+.si-c{background:rgba(34,211,238,.15)} .si-i{background:rgba(99,102,241,.15)}
+.stat-val{font-size:1.4rem;font-weight:700;line-height:1}
+.stat-lbl{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+
+/* ── Bond score hero ── */
+.bond-hero{background:linear-gradient(135deg,#1e0f2e,#1a1228);border:1px solid var(--border);
+  border-radius:16px;padding:1.75rem;display:flex;gap:2rem;align-items:center;
+  margin-bottom:1.5rem;flex-wrap:wrap}
+.bond-gauge{position:relative;flex-shrink:0}
+.bond-gauge svg{transform:rotate(-90deg)}
+.bond-num{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+.bond-num span{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--rose),var(--violet));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.bond-num small{font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.bond-info h2{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+.bond-info p{font-size:.88rem;color:var(--muted);line-height:1.6;max-width:480px}
+.bond-label{display:inline-block;margin-top:.75rem;padding:.3rem .9rem;border-radius:999px;
+  font-size:.78rem;font-weight:600;background:linear-gradient(135deg,rgba(244,63,94,.2),rgba(168,85,247,.2));
+  border:1px solid rgba(168,85,247,.3);color:#c4b5fd}
+
+/* ── Person cards ── */
+.person-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.person-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:1.1rem 1.25rem;border-left:3px solid}
+.pc-r{border-left-color:var(--rose)} .pc-v{border-left-color:var(--violet)}
+.prow{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);padding:.2rem 0}
+.prow span:last-child{color:var(--text);font-weight:500}
+
+/* ── Head-to-Head ── */
+.h2h-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.9rem}
+.h2h-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
+.h2h-label{font-size:.75rem;color:var(--muted);margin-bottom:.75rem;font-weight:500}
+.h2h-bar-wrap{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.h2h-name{font-size:.8rem;font-weight:500;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h2h-name.right{text-align:right}
+.h2h-bar-bg{flex:1;height:8px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.h2h-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.h2h-val{font-size:.78rem;font-weight:600;min-width:46px;text-align:right}
+.h2h-winner{font-size:.7rem;margin-top:.3rem;color:var(--muted);text-align:center}
+.winner-badge{display:inline-block;padding:.1rem .6rem;border-radius:999px;
+  background:rgba(245,158,11,.15);color:var(--gold);border:1px solid rgba(245,158,11,.3);font-weight:600}
+
+/* ── Charts ── */
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.chart-card.wide{grid-column:1/-1}
+.chart-card h3{font-size:.95rem;font-weight:600;margin-bottom:1rem}
+.chart-wrap{position:relative;height:260px}
+.chart-wrap.tall{height:320px}
+
+/* ── Heatmap ── */
+.hm-scroll{overflow-x:auto;padding-bottom:.5rem}
+.hm-cell{width:22px;height:22px;border-radius:3px;flex-shrink:0;cursor:default}
+.hm-cell:hover{outline:1px solid #fff;opacity:.85}
+
+/* ── Fun facts ── */
+.facts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.fact-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem}
+.fact-emoji{font-size:1.75rem;margin-bottom:.5rem}
+.fact-val{font-size:1.2rem;font-weight:700;margin-bottom:.2rem;
+  background:linear-gradient(135deg,var(--rose),var(--violet));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.fact-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+/* ── Word cloud ── */
+.word-list{display:flex;flex-wrap:wrap;gap:.45rem;padding:.25rem 0}
+.word-tag{padding:.28rem .7rem;border-radius:999px;font-size:.82rem;font-weight:500}
+
+/* ── Summary card ── */
+.summary-card{background:linear-gradient(135deg,#1e0f2e,#1a1228);border:1px solid rgba(168,85,247,.3);
+  border-radius:16px;padding:1.75rem}
+.summary-card h3{font-size:1rem;font-weight:600;margin-bottom:1.1rem}
+.summary-line{padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.88rem;line-height:1.6}
+.summary-line:last-child{border-bottom:none}
+
+/* ── Misc ── */
+.hidden{display:none!important}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:720px){
+  .charts-grid{grid-template-columns:1fr}.chart-card.wide{grid-column:1}
+  .bond-hero{flex-direction:column;align-items:flex-start}.wrap{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-icon">💑</div>
+  <div>
+    <h1>Our Chat Story</h1>
+    <p>Every message, every moment — visualised</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Upload -->
+  <div id="uploadSection" class="upload-wrap">
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">💌</div>
+      <h2>Drop your WhatsApp chat here</h2>
+      <p>In WhatsApp: open chat → ⋮ → More → Export Chat → Without Media<br>
+         Then drop the <strong>.txt</strong> file here or click below.</p>
+      <button class="btn btn-rose" onclick="document.getElementById('fileInput').click()">
+        📁 Choose File
+      </button>
+      <input type="file" id="fileInput" accept=".txt" style="display:none">
+    </div>
+    <p style="margin-top:1rem;color:var(--muted);font-size:.78rem;text-align:center">
+      🔒 All processing happens in your browser — nothing is uploaded
+    </p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+
+    <div class="top-bar">
+      <div>
+        <div id="chatTitle" style="font-size:1.1rem;font-weight:700"></div>
+        <div id="chatSub" style="font-size:.8rem;color:var(--muted);margin-top:.2rem"></div>
+      </div>
+      <button class="btn btn-ghost" onclick="resetDashboard()">↩ Load another file</button>
+    </div>
+
+    <!-- Bond Score -->
+    <div class="bond-hero" id="bondHero">
+      <div class="bond-gauge">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="54" fill="none" stroke="#2e1f45" stroke-width="13"/>
+          <circle id="bondArc" cx="65" cy="65" r="54" fill="none"
+            stroke="url(#bondGrad)" stroke-width="13" stroke-linecap="round"
+            stroke-dasharray="339" stroke-dashoffset="339"/>
+          <defs>
+            <linearGradient id="bondGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f43f5e"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="bond-num">
+          <span id="bondScore">—</span>
+          <small>/ 100</small>
+        </div>
+      </div>
+      <div class="bond-info">
+        <h2 id="bondTitle">Bond Score</h2>
+        <p id="bondDesc">Loading…</p>
+        <span class="bond-label" id="bondLabel">—</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="sec">Overview</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="si si-r">💬</div><div><div class="stat-val" id="sTotal">—</div><div class="stat-lbl">Total Messages</div></div></div>
+      <div class="stat-card"><div class="si si-v">📅</div><div><div class="stat-val" id="sDays">—</div><div class="stat-lbl">Active Days</div></div></div>
+      <div class="stat-card"><div class="si si-o">⚡</div><div><div class="stat-val" id="sAvg">—</div><div class="stat-lbl">Avg / Day</div></div></div>
+      <div class="stat-card"><div class="si si-g">🔥</div><div><div class="stat-val" id="sStreak">—</div><div class="stat-lbl">Longest Streak</div></div></div>
+      <div class="stat-card"><div class="si si-c">📝</div><div><div class="stat-val" id="sWords">—</div><div class="stat-lbl">Total Words</div></div></div>
+      <div class="stat-card"><div class="si si-i">🌹</div><div><div class="stat-val" id="sSince">—</div><div class="stat-lbl">Together Since</div></div></div>
+    </div>
+
+    <!-- Per person -->
+    <div class="sec">Per Person</div>
+    <div class="person-grid" id="personGrid"></div>
+
+    <!-- Head to Head -->
+    <div class="sec">Head to Head</div>
+    <div class="h2h-grid" id="h2hGrid"></div>
+
+    <!-- Charts -->
+    <div class="sec">Charts</div>
+    <div class="charts-grid">
+      <div class="chart-card"><h3>💬 Message Share</h3><div class="chart-wrap"><canvas id="cShare"></canvas></div></div>
+      <div class="chart-card"><h3>🕐 Hourly Activity</h3><div class="chart-wrap"><canvas id="cHourly"></canvas></div></div>
+      <div class="chart-card wide"><h3>📈 Weekly Timeline</h3><div class="chart-wrap tall"><canvas id="cTimeline"></canvas></div></div>
+      <div class="chart-card"><h3>📅 Day of Week</h3><div class="chart-wrap"><canvas id="cDow"></canvas></div></div>
+      <div class="chart-card"><h3>🚀 Conversation Starters</h3><div class="chart-wrap"><canvas id="cStarters"></canvas></div></div>
+      <div class="chart-card wide"><h3>📊 Monthly Activity</h3><div class="chart-wrap"><canvas id="cMonthly"></canvas></div></div>
+      <div class="chart-card" id="cResponseCard"><h3>⏱️ Response Times</h3><div class="chart-wrap"><canvas id="cResponse"></canvas></div></div>
+      <div class="chart-card"><h3>📏 Avg Message Length</h3><div class="chart-wrap"><canvas id="cLength"></canvas></div></div>
+      <div class="chart-card wide"><h3>🔥 Activity Heatmap — Day × Hour</h3><div id="heatmapCon" class="hm-scroll"></div></div>
+    </div>
+
+    <!-- Fun Facts -->
+    <div class="sec">Fun Facts</div>
+    <div class="facts-grid" id="factsGrid"></div>
+
+    <!-- Word cloud -->
+    <div class="sec">Most Used Words</div>
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <div id="wordCloud" class="word-list"></div>
+    </div>
+
+    <!-- Your Story -->
+    <div class="sec">Your Story</div>
+    <div class="summary-card">
+      <h3>💌 In a nutshell</h3>
+      <div id="summaryLines"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ── Chart defaults ── */
+Chart.defaults.color = '#9d7bb5';
+Chart.defaults.borderColor = '#2e1f45';
+Chart.defaults.font.family = "'Inter',sans-serif";
+Chart.defaults.font.size = 12;
+
+const ROSE='#f43f5e', VIOLET='#a855f7', GOLD='#f59e0b',
+      GREEN='#10b981', CYAN='#22d3ee', INDIGO='#6366f1';
+const PAL = [ROSE, VIOLET, GREEN, GOLD, CYAN, INDIGO];
+const PC_CLS = ['pc-r','pc-v','pc-r','pc-v'];
+
+let msgs=[], S={}, CS={}, charts={};
+
+/* ── File handling ── */
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');go(e.dataTransfer.files[0])});
+document.getElementById('fileInput').addEventListener('change',e=>go(e.target.files[0]));
+
+function go(file){
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    msgs=parse(e.target.result);
+    if(msgs.length<5){
+      const fl=e.target.result.split(/\r?\n/).find(l=>l.trim())||'(empty)';
+      alert('Could not parse — only '+msgs.length+' message(s) found.\n\nFirst line:\n'+fl.slice(0,200));
+      return;
+    }
+    try{
+      S=computeStats(msgs);
+      CS=computeCoupleStats(msgs,S);
+      render();
+      document.getElementById('uploadSection').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+    }catch(err){ alert('Error: '+err.message+'\n'+err.stack); }
+  };
+  r.readAsText(file,'utf-8');
+}
+
+function resetDashboard(){
+  Object.values(charts).forEach(c=>c.destroy()); charts={}; msgs=[];S={};CS={};
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('uploadSection').classList.remove('hidden');
+  document.getElementById('fileInput').value='';
+}
+
+/* ── Parser ── */
+function normLine(raw){
+  return raw.replace(/[‎‏‪‫‬‭‮⁦⁧⁨⁩﻿]/g,'').replace(/ | /g,' ').trim();
+}
+const MSG_RE=/^(?:\[)?(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}),\s*(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[aApP][mM])?)(?:\])?\s*(?:[-––—]\s*)?([^:[\]]+):\s*([\s\S]*)/;
+const SKIP=['end-to-end encrypted','missed voice call','missed video call','created group',
+            'added you','changed the subject','security code','omitted',
+            'this message was deleted','you deleted this message'];
+
+function parse(text){
+  const out=[]; let cur=null;
+  for(const raw of text.split(/\r?\n/)){
+    const line=normLine(raw);
+    if(!line) continue;
+    const m=line.match(MSG_RE);
+    if(m){
+      if(cur) out.push(cur);
+      const ts=parseTS(m[1],m[2]);
+      if(!ts){cur=null;continue;}
+      const body=m[4].trim();
+      if(SKIP.some(s=>body.toLowerCase().includes(s))){cur=null;continue;}
+      cur={ts,sender:m[3].trim(),body};
+    } else if(cur){ cur.body+='\n'+line; }
+  }
+  if(cur) out.push(cur);
+  return out.filter(x=>x.sender&&x.body);
+}
+
+function parseTS(ds,tsRaw){
+  try{
+    const ts=tsRaw.replace(/ | /g,' ').trim();
+    const sep=ds.includes('/')?'/':ds.includes('-')?'-':'.';
+    const dp=ds.split(sep).map(Number); if(dp.length!==3) return null;
+    let[a,b,c]=dp; const yr=c<100?2000+c:c;
+    let day,mon;
+    if(a>12){day=a;mon=b;}else if(b>12){mon=a;day=b;}else{day=a;mon=b;}
+    const isPM=/pm/i.test(ts),isAM=/am/i.test(ts);
+    const tp=ts.replace(/[^\d:]/g,'').split(':').map(Number);
+    let h=tp[0]||0,min=tp[1]||0,sec=tp[2]||0;
+    if(isPM&&h!==12)h+=12; if(isAM&&h===12)h=0;
+    const d=new Date(yr,mon-1,day,h,min,sec);
+    return isNaN(d.getTime())?null:d;
+  }catch{return null;}
+}
+
+/* ── Main stats ── */
+const STOP=new Set([
+  'the','and','is','in','it','of','to','a','an','that','this','was','for','on','are',
+  'with','as','at','be','by','from','or','but','not','have','he','she','we','they',
+  'you','i','me','my','your','his','her','our','will','do','did','get','got','ok',
+  'okay','ha','haha','lol','ya','yeah','yes','no','na','anu','ath','ee','oru','ente',
+  'njan','njn','athe','alle','ayyo','eda','edo','edi','mone','molle','da','di','che',
+  'chee','aan','aanu','enne','ennu','ella','ille','nee','ningal','avide','ivide',
+  'omitted','media','image','video','audio','sticker','document','contact',
+]);
+
+function computeStats(msgs){
+  const sCnt={},sWds={},sChr={},daily={},hourly=new Array(24).fill(0),
+        dow=new Array(7).fill(0),monthly={},hmap={},wfreq={},starters={},rtimes={};
+  const GAP=3*60*60*1000; let prev=null;
+  for(const msg of msgs){
+    const{ts,sender,body}=msg;
+    const dk=ts.toISOString().slice(0,10),hr=ts.getHours(),dw=ts.getDay(),
+          mk=ts.toISOString().slice(0,7),hk=`${dw}-${hr}`;
+    const wds=body.split(/\s+/).filter(w=>w.length>2);
+    sCnt[sender]=(sCnt[sender]||0)+1;
+    sWds[sender]=(sWds[sender]||0)+wds.length;
+    sChr[sender]=(sChr[sender]||0)+body.length;
+    daily[dk]=(daily[dk]||0)+1; hourly[hr]++; dow[dw]++;
+    monthly[mk]=(monthly[mk]||0)+1; hmap[hk]=(hmap[hk]||0)+1;
+    for(const w of wds){
+      const wl=w.toLowerCase().replace(/[^a-z]/g,'');
+      if(wl.length>=3&&!STOP.has(wl)) wfreq[wl]=(wfreq[wl]||0)+1;
+    }
+    if(!prev||(ts-prev.ts>GAP)) starters[sender]=(starters[sender]||0)+1;
+    if(prev&&prev.sender!==sender){
+      const diff=(ts-prev.ts)/60000;
+      if(diff<1440){if(!rtimes[sender])rtimes[sender]=[];rtimes[sender].push(diff);}
+    }
+    prev=msg;
+  }
+  const dateKeys=Object.keys(daily).sort();
+  let maxS=1,curS=1;
+  for(let i=1;i<dateKeys.length;i++){
+    const d=(new Date(dateKeys[i])-new Date(dateKeys[i-1]))/86400000;
+    if(d===1){curS++;maxS=Math.max(maxS,curS);}else curS=1;
+  }
+  const medRT={};
+  for(const[s,t]of Object.entries(rtimes)){
+    const sorted=[...t].sort((a,b)=>a-b); medRT[s]=sorted[Math.floor(sorted.length/2)];
+  }
+  const topWords=Object.entries(wfreq).sort((a,b)=>b[1]-a[1]).slice(0,60);
+  const dates=msgs.map(m=>m.ts);
+  const minDate=dates.reduce((a,b)=>a<b?a:b);
+  const maxDate=dates.reduce((a,b)=>a>b?a:b);
+  return{sCnt,sWds,sChr,daily,hourly,dow,monthly,hmap,topWords,starters,rtimes,medRT,
+    total:msgs.length,totalWords:Object.values(sWds).reduce((a,b)=>a+b,0),
+    activeDays:dateKeys.length,maxStreak:maxS,minDate,maxDate,
+    participants:Object.keys(sCnt)};
+}
+
+/* ── Couple-specific stats ── */
+function computeCoupleStats(msgs,s){
+  const{participants}=s;
+  const nightMsgs={},morningMsgs={},doubleTexts={},silenceBreakers={};
+  for(const p of participants){nightMsgs[p]=0;morningMsgs[p]=0;doubleTexts[p]=0;silenceBreakers[p]=0;}
+  let prevSender=null,prevTs=null;
+  for(const{ts,sender}of msgs){
+    const hr=ts.getHours();
+    if(hr>=22||hr<2) nightMsgs[sender]=(nightMsgs[sender]||0)+1;
+    if(hr>=6&&hr<9) morningMsgs[sender]=(morningMsgs[sender]||0)+1;
+    if(prevSender===sender) doubleTexts[sender]=(doubleTexts[sender]||0)+1;
+    if(prevTs&&(ts-prevTs)>4*60*60*1000&&prevSender!==sender)
+      silenceBreakers[sender]=(silenceBreakers[sender]||0)+1;
+    prevSender=sender; prevTs=ts;
+  }
+  const[bestDay,bestDayCount]=Object.entries(s.daily).sort((a,b)=>b[1]-a[1])[0];
+  let longestGapHr=0,longestGapDate=null,prevMsgTs=null;
+  for(const{ts}of msgs){
+    if(prevMsgTs){const g=(ts-prevMsgTs)/3600000;if(g>longestGapHr){longestGapHr=g;longestGapDate=ts;}}
+    prevMsgTs=ts;
+  }
+  // First message
+  const firstMsg=msgs[0];
+  return{nightMsgs,morningMsgs,doubleTexts,silenceBreakers,bestDay,bestDayCount,longestGapHr,longestGapDate,firstMsg};
+}
+
+/* ── Bond score ── */
+function calcBondScore(s){
+  const{participants,sCnt,medRT,activeDays,total,maxStreak}=s;
+  if(participants.length<2) return 70;
+  const[p1,p2]=participants;
+  const pct1=sCnt[p1]/total;
+  const balance=(1-Math.abs(pct1-.5)*2)*25;
+  const rt1=medRT[p1]||120,rt2=medRT[p2]||120,avgRT=(rt1+rt2)/2;
+  const rtScore=Math.max(0,25*(1-avgRT/120));
+  const streakScore=Math.min(25,(maxStreak/activeDays)*100);
+  const avgPerDay=total/activeDays;
+  const engScore=Math.min(25,(avgPerDay/20)*25);
+  return Math.min(99,Math.round(balance+rtScore+streakScore+engScore));
+}
+
+/* ── Helpers ── */
+function fmtMin(m){if(m<1)return'<1 min';if(m<60)return Math.round(m)+' min';return(m/60).toFixed(1)+' hr';}
+function mk(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function pctBar(val,total){return total>0?Math.round((val/total)*100):0;}
+
+/* ── Main render ── */
+function render(){
+  const{participants,minDate,maxDate,total,activeDays,maxStreak,totalWords}=S;
+  document.getElementById('chatTitle').textContent=
+    participants.slice(0,2).join(' & ')+(participants.length>2?` +${participants.length-2}`:'')+' 💑';
+  document.getElementById('chatSub').textContent=
+    minDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+
+    ' → '+maxDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+
+    '  ·  '+total.toLocaleString()+' messages';
+  document.getElementById('sTotal').textContent=total.toLocaleString();
+  document.getElementById('sDays').textContent=activeDays.toLocaleString();
+  document.getElementById('sAvg').textContent=(total/activeDays).toFixed(1);
+  document.getElementById('sStreak').textContent=maxStreak+' days';
+  document.getElementById('sWords').textContent=(totalWords/1000).toFixed(1)+'k';
+  document.getElementById('sSince').textContent=minDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  renderBondScore();
+  renderPersonCards();
+  renderH2H();
+  renderShare();renderHourly();renderTimeline();renderDow();
+  renderStarters();renderMonthly();renderResponse();renderLength();
+  renderHeatmap();renderWordCloud();
+  renderFunFacts();
+  renderSummary();
+}
+
+/* ── Bond score ── */
+function renderBondScore(){
+  const score=calcBondScore(S);
+  document.getElementById('bondScore').textContent=score;
+  const arc=document.getElementById('bondArc');
+  const circ=339;
+  arc.style.strokeDashoffset=circ-(score/100)*circ;
+  const[p1,p2]=S.participants;
+  const labels=['Just Getting Started','Building Something Real','Strong Connection','Deeply Bonded','Inseparable 💕'];
+  const label=score<40?labels[0]:score<55?labels[1]:score<70?labels[2]:score<85?labels[3]:labels[4];
+  document.getElementById('bondLabel').textContent=label;
+  document.getElementById('bondTitle').textContent='Your Bond Score';
+
+  const pct1=((S.sCnt[p1]||0)/S.total*100).toFixed(0);
+  const starter=Object.entries(S.starters).sort((a,b)=>b[1]-a[1])[0]?.[0]||p1;
+  const faster=p2&&(S.medRT[p1]||999)<=(S.medRT[p2]||999)?p1:p2;
+  document.getElementById('bondDesc').textContent=
+    `${p1} sends ${pct1}% of messages and ${starter} usually starts conversations. `+
+    `${faster} tends to reply faster. You've kept a ${S.maxStreak}-day streak going — `+
+    `that's ${S.activeDays} active days of never letting silence win.`;
+}
+
+/* ── Person cards ── */
+function renderPersonCards(){
+  const{participants,sCnt,sWds,sChr,medRT}=S;
+  document.getElementById('personGrid').innerHTML=participants.map((p,i)=>`
+    <div class="person-card ${i%2===0?'pc-r':'pc-v'}">
+      <div style="font-weight:700;font-size:1rem;color:${PAL[i%6]};margin-bottom:.6rem">${p}</div>
+      <div class="prow"><span>Messages</span><span>${(sCnt[p]||0).toLocaleString()}</span></div>
+      <div class="prow"><span>Words</span><span>${(sWds[p]||0).toLocaleString()}</span></div>
+      <div class="prow"><span>Avg chars / msg</span><span>${sCnt[p]?((sChr[p]||0)/sCnt[p]).toFixed(0):'-'}</span></div>
+      <div class="prow"><span>Median reply</span><span>${medRT[p]?fmtMin(medRT[p]):'—'}</span></div>
+    </div>`).join('');
+}
+
+/* ── Head to Head ── */
+function renderH2H(){
+  const{participants,sCnt,sWds,sChr,medRT,starters,total}=S;
+  const{nightMsgs,morningMsgs,doubleTexts,silenceBreakers}=CS;
+  if(participants.length<2){document.getElementById('h2hGrid').innerHTML='';return;}
+  const[p1,p2]=participants;
+
+  const cats=[
+    {icon:'💬',label:'Messages Sent',v1:sCnt[p1]||0,v2:sCnt[p2]||0,fmt:v=>v.toLocaleString(),higher:true},
+    {icon:'✍️',label:'Words Written',v1:sWds[p1]||0,v2:sWds[p2]||0,fmt:v=>v.toLocaleString(),higher:true},
+    {icon:'📏',label:'Avg Message Length',v1:sCnt[p1]?((sChr[p1]||0)/sCnt[p1]).toFixed(0):0,v2:sCnt[p2]?((sChr[p2]||0)/sCnt[p2]).toFixed(0):0,fmt:v=>v+' chars',higher:true},
+    {icon:'🚀',label:'Conversations Started',v1:starters[p1]||0,v2:starters[p2]||0,fmt:v=>v,higher:true},
+    {icon:'⚡',label:'Reply Speed',v1:medRT[p1]||999,v2:medRT[p2]||999,fmt:v=>v>=999?'—':fmtMin(v),higher:false},
+    {icon:'🌙',label:'Late Night Texts (10pm–2am)',v1:nightMsgs[p1]||0,v2:nightMsgs[p2]||0,fmt:v=>v.toLocaleString(),higher:true},
+    {icon:'☀️',label:'Morning Texts (6am–9am)',v1:morningMsgs[p1]||0,v2:morningMsgs[p2]||0,fmt:v=>v.toLocaleString(),higher:true},
+    {icon:'💬',label:'Double Texts (back-to-back)',v1:doubleTexts[p1]||0,v2:doubleTexts[p2]||0,fmt:v=>v.toLocaleString(),higher:true},
+    {icon:'💗',label:'Broke the Silence',v1:silenceBreakers[p1]||0,v2:silenceBreakers[p2]||0,fmt:v=>v,higher:true},
+  ];
+
+  document.getElementById('h2hGrid').innerHTML=cats.map(cat=>{
+    const{icon,label,v1,v2,fmt,higher}=cat;
+    const sum=Number(v1)+Number(v2)||1;
+    const pct1=Math.round(Number(v1)/sum*100),pct2=100-pct1;
+    const w1=(higher?Number(v1)>Number(v2):Number(v1)<Number(v2));
+    const w2=!w1&&Number(v1)!==Number(v2);
+    return`<div class="h2h-card">
+      <div class="h2h-label">${icon} ${label}</div>
+      <div class="h2h-bar-wrap">
+        <span class="h2h-name" style="color:${ROSE}">${p1}</span>
+        <div class="h2h-bar-bg"><div class="h2h-bar-fill" style="width:${pct1}%;background:${ROSE}"></div></div>
+        <span class="h2h-val" style="color:${ROSE}">${fmt(v1)}</span>
+      </div>
+      <div class="h2h-bar-wrap">
+        <span class="h2h-name" style="color:${VIOLET}">${p2}</span>
+        <div class="h2h-bar-bg"><div class="h2h-bar-fill" style="width:${pct2}%;background:${VIOLET}"></div></div>
+        <span class="h2h-val" style="color:${VIOLET}">${fmt(v2)}</span>
+      </div>
+      <div class="h2h-winner">Winner: <span class="winner-badge">${w1?p1:w2?p2:'Tie 🤝'}</span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Charts ── */
+function renderShare(){
+  mk('share');
+  charts.share=new Chart(document.getElementById('cShare'),{type:'doughnut',
+    data:{labels:S.participants,datasets:[{data:S.participants.map(p=>S.sCnt[p]),
+      backgroundColor:S.participants.map((_,i)=>PAL[i%6]),borderWidth:2,borderColor:'#1a1228'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${c.label}: ${c.raw.toLocaleString()} (${((c.raw/t)*100).toFixed(1)}%)`;}}}}}});
+}
+
+function renderHourly(){
+  mk('hourly');
+  const lbs=Array.from({length:24},(_,i)=>i===0?'12a':i<12?i+'a':i===12?'12p':(i-12)+'p');
+  const mx=Math.max(...S.hourly);
+  charts.hourly=new Chart(document.getElementById('cHourly'),{type:'bar',
+    data:{labels:lbs,datasets:[{data:S.hourly,
+      backgroundColor:S.hourly.map(v=>`rgba(244,63,94,${.2+.8*(v/mx)})`),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:0,font:{size:10}}},y:{grid:{color:'#2e1f45'}}}}});
+}
+
+function renderTimeline(){
+  mk('timeline');
+  const wkMap={};
+  for(const[dk,cnt]of Object.entries(S.daily)){
+    const d=new Date(dk);d.setDate(d.getDate()-d.getDay());
+    const k=d.toISOString().slice(0,10);wkMap[k]=(wkMap[k]||0)+cnt;
+  }
+  const sorted=Object.entries(wkMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  charts.timeline=new Chart(document.getElementById('cTimeline'),{type:'line',
+    data:{labels:sorted.map(([k])=>k),datasets:[{label:'Messages/week',data:sorted.map(([,v])=>v),
+      borderColor:ROSE,backgroundColor:'rgba(244,63,94,.1)',fill:true,tension:.4,pointRadius:2,pointHoverRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{type:'time',time:{unit:'month',displayFormats:{month:'MMM yy'}},grid:{display:false}},
+              y:{grid:{color:'#2e1f45'}}}}});
+}
+
+function renderDow(){
+  mk('dow');
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  charts.dow=new Chart(document.getElementById('cDow'),{type:'bar',
+    data:{labels:days,datasets:[{data:S.dow,
+      backgroundColor:days.map((_,i)=>[0,6].includes(i)?VIOLET+'cc':ROSE+'cc'),borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'#2e1f45'}}}}});
+}
+
+function renderStarters(){
+  mk('starters');
+  charts.starters=new Chart(document.getElementById('cStarters'),{type:'doughnut',
+    data:{labels:S.participants,datasets:[{data:S.participants.map(p=>S.starters[p]||0),
+      backgroundColor:S.participants.map((_,i)=>PAL[i%6]),borderWidth:2,borderColor:'#1a1228'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>{const t=c.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${c.label}: ${c.raw} (${t>0?((c.raw/t)*100).toFixed(1):0}%)`;}}}}}});
+}
+
+function renderMonthly(){
+  mk('monthly');
+  const sorted=Object.entries(S.monthly).sort((a,b)=>a[0].localeCompare(b[0]));
+  const mx=Math.max(...sorted.map(([,v])=>v));
+  charts.monthly=new Chart(document.getElementById('cMonthly'),{type:'bar',
+    data:{labels:sorted.map(([k])=>{const[y,m]=k.split('-');return new Date(+y,+m-1).toLocaleDateString('en-US',{month:'short',year:'2-digit'});}),
+      datasets:[{data:sorted.map(([,v])=>v),
+        backgroundColor:sorted.map(([,v])=>`rgba(168,85,247,${.2+.8*(v/mx)})`),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:45,font:{size:10}}},y:{grid:{color:'#2e1f45'}}}}});
+}
+
+function renderResponse(){
+  mk('response');
+  const ps=S.participants.filter(p=>S.rtimes[p]?.length>0);
+  if(!ps.length){document.getElementById('cResponseCard').classList.add('hidden');return;}
+  const buckets=['<1m','1–5m','5–30m','30m–2h','2h–8h','8h+'];
+  charts.response=new Chart(document.getElementById('cResponse'),{type:'bar',
+    data:{labels:buckets,datasets:ps.map((p,i)=>({label:p,borderRadius:3,
+      backgroundColor:PAL[i%6]+'cc',
+      data:(()=>{const b=[0,0,0,0,0,0];
+        for(const t of S.rtimes[p]){if(t<1)b[0]++;else if(t<5)b[1]++;else if(t<30)b[2]++;
+          else if(t<120)b[3]++;else if(t<480)b[4]++;else b[5]++;}return b;})()}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{usePointStyle:true}}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:'#2e1f45'}}}}});
+}
+
+function renderLength(){
+  mk('length');
+  const{participants,sCnt,sWds,sChr}=S;
+  charts.length=new Chart(document.getElementById('cLength'),{type:'bar',
+    data:{labels:participants,datasets:[
+      {label:'Avg chars',data:participants.map(p=>sCnt[p]?(sChr[p]/sCnt[p]).toFixed(1):0),
+        backgroundColor:participants.map((_,i)=>PAL[i%6]+'bb'),borderRadius:5,yAxisID:'y'},
+      {label:'Avg words',data:participants.map(p=>sCnt[p]?(sWds[p]/sCnt[p]).toFixed(1):0),
+        backgroundColor:[GREEN+'bb',GOLD+'bb'],borderRadius:5,yAxisID:'y2'},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{usePointStyle:true}}},
+      scales:{x:{grid:{display:false}},
+        y:{grid:{color:'#2e1f45'},position:'left',title:{display:true,text:'Chars'}},
+        y2:{grid:{display:false},position:'right',title:{display:true,text:'Words'}}}}});
+}
+
+function renderHeatmap(){
+  const DAY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const HR=Array.from({length:24},(_,i)=>i===0?'12a':i<12?`${i}a`:i===12?'12p':`${i-12}p`);
+  let mx=0; for(const v of Object.values(S.hmap)) if(v>mx) mx=v;
+  let html='<div style="display:flex;gap:6px;align-items:flex-start">';
+  html+='<div style="display:flex;flex-direction:column;gap:3px;padding-top:20px;flex-shrink:0">';
+  for(const d of DAY) html+=`<div style="height:22px;line-height:22px;color:var(--muted);font-size:.72rem;text-align:right;padding-right:4px;width:28px">${d}</div>`;
+  html+='</div><div>';
+  html+='<div style="display:flex;gap:3px;margin-bottom:3px">';
+  for(const h of HR) html+=`<div style="width:22px;font-size:.6rem;color:var(--muted);text-align:center;overflow:hidden">${h}</div>`;
+  html+='</div>';
+  for(let d=0;d<7;d++){
+    html+='<div style="display:flex;gap:3px;margin-bottom:3px">';
+    for(let h=0;h<24;h++){
+      const v=S.hmap[`${d}-${h}`]||0,t=mx>0?v/mx:0;
+      const r=Math.round(18+236*t),g=Math.round(8+55*t),b=Math.round(40+54*t);
+      html+=`<div class="hm-cell" style="background:rgb(${r},${g},${b})" title="${DAY[d]} ${HR[h]}: ${v} msgs"></div>`;
+    }
+    html+='</div>';
+  }
+  html+='</div></div>';
+  document.getElementById('heatmapCon').innerHTML=html;
+}
+
+function renderWordCloud(){
+  const mx=S.topWords[0]?.[1]||1;
+  const colors=[ROSE,VIOLET,GREEN,GOLD,CYAN,INDIGO];
+  document.getElementById('wordCloud').innerHTML=S.topWords.map(([w,c],i)=>{
+    const sz=.75+.9*(c/mx),col=colors[i%6];
+    return`<span class="word-tag" style="font-size:${sz}rem;background:${col}22;color:${col};border:1px solid ${col}44">${w} <small style="opacity:.6">${c}</small></span>`;
+  }).join('');
+}
+
+/* ── Fun facts ── */
+function renderFunFacts(){
+  const{participants,hourly,dow,total,activeDays,maxStreak,minDate,daily,medRT}=S;
+  const{bestDay,bestDayCount,longestGapHr,morningMsgs,nightMsgs,firstMsg}=CS;
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const[p1,p2]=participants;
+
+  const peakHr=hourly.indexOf(Math.max(...hourly));
+  const peakHrLbl=peakHr===0?'midnight':peakHr<12?`${peakHr}am`:peakHr===12?'noon':`${peakHr-12}pm`;
+  const peakDay=DAYS[dow.indexOf(Math.max(...dow))];
+
+  const bestDateFmt=new Date(bestDay).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+  const nmTotal=Object.values(nightMsgs).reduce((a,b)=>a+b,0);
+  const mmTotal=Object.values(morningMsgs).reduce((a,b)=>a+b,0);
+  const nightPct=((nmTotal/total)*100).toFixed(0);
+  const nightOwl=p2&&(nightMsgs[p1]||0)>=(nightMsgs[p2]||0)?p1:p2;
+
+  const readHrs=((total*30)/3600).toFixed(0);
+
+  const facts=[
+    {emoji:'📅',val:bestDateFmt,desc:`Best day ever — ${bestDayCount} messages in a single day`},
+    {emoji:'⏰',val:peakHrLbl,desc:`Peak texting hour, usually on ${peakDay}s`},
+    {emoji:'🌙',val:nightPct+'%',desc:`of messages sent between 10pm and 2am — ${nightOwl} is the night owl`},
+    {emoji:'⏳',val:longestGapHr>=24?Math.round(longestGapHr/24)+'d':Math.round(longestGapHr)+'h',desc:`Longest silence — the biggest gap between messages`},
+    {emoji:'📖',val:readHrs+' hrs',desc:`How long it would take to read your entire chat out loud`},
+    {emoji:'💌',val:'"'+firstMsg.body.slice(0,28)+(firstMsg.body.length>28?'…':'')+'"',desc:`The very first message, from ${firstMsg.sender}`},
+  ];
+
+  document.getElementById('factsGrid').innerHTML=facts.map(f=>`
+    <div class="fact-card">
+      <div class="fact-emoji">${f.emoji}</div>
+      <div class="fact-val">${f.val}</div>
+      <div class="fact-desc">${f.desc}</div>
+    </div>`).join('');
+}
+
+/* ── Narrative summary ── */
+function renderSummary(){
+  const{participants,sCnt,sWds,sChr,medRT,starters,topWords,hourly,dow,
+        monthly,total,activeDays,maxStreak,minDate,maxDate,totalWords}=S;
+  const{nightMsgs,morningMsgs,doubleTexts}=CS;
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const[p1,p2]=participants;
+
+  const months=Math.round((maxDate-minDate)/(1000*60*60*24*30));
+  const duration=months>=24?`${Math.floor(months/12)} year${Math.floor(months/12)>1?'s':''}`:
+                 months>=1?`${months} month${months>1?'s':''}`:' a few weeks';
+  const pct1=((sCnt[p1]||0)/total*100).toFixed(0);
+  const more=p2&&(sCnt[p1]||0)>=(sCnt[p2]||0)?p1:p2;
+  const wordsEach=((totalWords/1000)/2).toFixed(1);
+  const starter=p2?Object.entries(starters).sort((a,b)=>b[1]-a[1])[0]?.[0]||p1:p1;
+  const starterPct=p2?(((starters[starter]||0)/Math.max(1,(starters[p1]||0)+(starters[p2]||0)))*100).toFixed(0):100;
+  const peakHr=hourly.indexOf(Math.max(...hourly));
+  const peakDay=DAYS[dow.indexOf(Math.max(...dow))];
+  const peakHrLbl=peakHr===0?'midnight':peakHr<12?`${peakHr}am`:peakHr===12?'noon':`${peakHr-12}pm`;
+  const topWord=topWords[0]?.[0]||'';
+  const faster=p2&&(medRT[p1]||999)<=(medRT[p2]||999)?p1:p2;
+  const[busiestMo,busiestCnt]=Object.entries(monthly).sort((a,b)=>b[1]-a[1])[0];
+  const[bmy,bmm]=busiestMo.split('-');
+  const busiestLbl=new Date(+bmy,+bmm-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const dt=p2&&doubleTexts[p1]&&doubleTexts[p2]?(doubleTexts[p1]>=doubleTexts[p2]?p1:p2):null;
+
+  const lines=[
+    `💑 ${p1}${p2?' and '+p2:''} have been texting for <strong>${duration}</strong> — from ${minDate.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})} all the way to ${maxDate.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}.`,
+    `💬 In that time, you've exchanged <strong>${total.toLocaleString()} messages</strong> over <strong>${activeDays} active days</strong> — that's roughly <strong>${(total/activeDays).toFixed(1)} messages every single day</strong>.`,
+    p2?`✍️ <strong>${more}</strong> is the more talkative one, sending about ${more===p1?pct1:100-+pct1}% of all messages. Together you've written around <strong>${(totalWords/1000).toFixed(1)}k words</strong> — about ${wordsEach}k each.`:`✍️ A total of <strong>${(totalWords/1000).toFixed(1)}k words</strong> sent — impressive.`,
+    p2?`🚀 <strong>${starter}</strong> kicks off ${starterPct}% of conversations — the one who usually can't wait to talk.`:'',
+    p2?`⚡ <strong>${faster}</strong> tends to reply faster. ${medRT[faster]?'Median reply time: '+fmtMin(medRT[faster])+'.':''}`:'' ,
+    `🕐 Your chat comes alive around <strong>${peakHrLbl}</strong>, and <strong>${peakDay}s</strong> are your most talkative day of the week.`,
+    `📅 Your busiest month was <strong>${busiestLbl}</strong> with <strong>${busiestCnt.toLocaleString()} messages</strong> — something must have been going on.`,
+    `🔥 Your longest streak without a single day of silence: <strong>${maxStreak} consecutive days</strong>.`,
+    dt?`💬 <strong>${dt}</strong> is the double-texter — never waits for a reply before sending another message.`:'',
+    topWord?`🔤 The word you both use most: <em>"${topWord}"</em>.`:'',
+  ].filter(Boolean);
+
+  document.getElementById('summaryLines').innerHTML=
+    lines.map(l=>`<div class="summary-line">${l}</div>`).join('');
+}
+</script>
+</body>
+</html>
